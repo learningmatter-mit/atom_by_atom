@@ -4,15 +4,24 @@ This repo is under construction.
 
 To clone this repo and all submodules:
 ```
-git clone --recurse-submodules git@github.com:learningmatter-mit/PerovskiteOrderingGCNNs.git
+git clone --recurse-submodules git@github.com:learningmatter-mit/atom_by_atom.git
 ```
 or
 ```
-git clone git@github.com:learningmatter-mit/PerovskiteOrderingGCNNs.git
+git clone git@github.com:learningmatter-mit/atom_by_atom.git
 git submodule update --init
 ```
 
 To only update the submodules:
 ```
 git submodule update --remote --merge
+```
+This repository requires the following packages to run correctly:
+```
+```
+
+All these packages can be installed using the [environment.yml](environment.yml) file and `conda`:
+```
+conda env create -f environment.yml
+conda activate atombyatom
 ```
