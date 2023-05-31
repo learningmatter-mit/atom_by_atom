@@ -1,0 +1,51 @@
+{
+    "wandb": {
+        "project": "per-site learning (perov)",
+        "name": "magmom-bandcenter-surf learning"
+    },
+    "details": {
+        "multifidelity": false,
+        "output_keys": [
+            "bandfilling"
+        ],
+        "loss_fn": "MSE",
+        "metric_fn": "MAE",
+        "optim": "Adam",
+        "lr": 0.0001,
+        "weight_decay": 0.0,
+        "sched": "reduce_on_plateau",
+        "val_size": 0.1,
+        "test_size": 0.1
+    },
+    "modelparams": {
+        "feat_dim": 128,
+        "activation": "learnable_swish",
+        "learnable_k": true,
+        "activation_f": "swish",
+        "n_rbf": 20,
+        "cutoff": 5.5,
+        "num_conv": 5,
+        "conv_dropout": 0.15,
+        "atom_fea_len": {
+            "target": 150
+        },
+        "h_fea_len": {
+            "target": 256
+        },
+        "n_h": {
+            "target": 3
+        },
+        "readout_dropout": {
+            "target": 0.05
+        },
+        "fc_dropout": {
+            "target": 0.05
+        },
+        "n_outputs": {
+            "target": 1
+        },
+        "loss_coeff": {
+            "target": 1.0
+        }
+    }
+}

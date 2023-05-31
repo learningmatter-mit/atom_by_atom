@@ -1,0 +1,12 @@
+{
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length 120"],
+  "audioCues.diffLineDeleted": "off",
+  "audioCues.diffLineInserted": "off",
+  "audioCues.lineHasBreakpoint": "off",
+  "audioCues.lineHasError": "off",
+  "audioCues.lineHasFoldedArea": "off",
+  "audioCues.lineHasInlineSuggestion": "off",
+  "audioCues.noInlayHints": "off",
+  "audioCues.notebookCellFailed": "off"
+}
