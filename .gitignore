@@ -1,0 +1,15 @@
+*.pth.tar
+*._*
+*_pycache_*
+*/__pycache__
+*.log
+*.ipynb_checkpoints
+*.tar.gz
+vbm_cbm_proj.*
+*.json.gz
+*.pickle
+*cache
+*.pkl
+*data
+*data_cache
+*train
