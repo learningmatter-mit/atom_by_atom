@@ -1,0 +1,3 @@
+[submodule "per-site_cgcnn"]
+	path = per-site_cgcnn
+	url = git@github.com:learningmatter-mit/per-site_cgcnn.git
