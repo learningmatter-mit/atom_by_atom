@@ -10,6 +10,5 @@ vbm_cbm_proj.*
 *.pickle
 *cache
 *.pkl
-*data
 *data_cache
 *train
