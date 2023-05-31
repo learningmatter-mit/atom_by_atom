@@ -25,3 +25,5 @@ All these packages can be installed using the [environment.yml](environment.yml)
 conda env create -f environment.yml
 conda activate atombyatom
 ```
+
+Data for training per-site CGCNN can be found in the data folder. 
