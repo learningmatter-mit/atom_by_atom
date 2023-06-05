@@ -16,10 +16,18 @@ To only update the submodules:
 ```
 git submodule update --remote --merge
 ```
-This repository requires the following packages to run correctly, which can be pip installed with the pip_requirements.txt file:
+
+## installation 
+
+atombyatom can be installed using the following line:
 ```
-pip install -r requirements.txt
+pip install -e . # for developer mode
 ```
+or 
+```
+pip install . 
+```
+
 
 
 # Downloading the data from Atom by Atom Design of Metal Oxide Catalysts for the Oxygen Evolution Reaction with Machine Learning
