@@ -13,3 +13,4 @@ vbm_cbm_proj.*
 *data_cache
 *train
 *egg-info
+*.json
