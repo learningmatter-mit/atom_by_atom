@@ -16,24 +16,25 @@ To only update the submodules:
 ```
 git submodule update --remote --merge
 ```
-This repository requires the following packages to run correctly:
+This repository requires the following packages to run correctly, which can be pip installed with the pip_requirements.txt file:
 ```
-```
-
-All these packages can be installed using the [environment.yml](environment.yml) file and `conda`:
-```
-conda env create -f environment.yml
-conda activate atombyatom
+pip install -r requirements.txt
 ```
 
-# Downlaoding the data from Atom by Atom Design of Metal Oxide Catalysts for the Oxygen Evolution Reaction with Machine Learning
 
-There are several datasets for per-site properties of bulk oxides available. Download these inside the data folder using the following commands:
+# Downloading the data from Atom by Atom Design of Metal Oxide Catalysts for the Oxygen Evolution Reaction with Machine Learning
+
+There are several datasets for per-site properties of bulk oxides available. You can download the datasets using the following commands: 
 ```
-python download.py bulk_dos
+atombyatom download bulk_dos
 ```
 
-## Downloading the data
+The datasets will be downloaded inside the data folder as data/bulk_dos.json etc.
 
-The data for training the per-site models can be downloaded using the following command:
- 
+# Running the per-site cgcnn and per-site painn codes
+
+Per-site CGCNN and Per-site PAINN can be trained/tested on the downloaded datasets by running the following line inside of the per-site_cgcnn and per-site_painn folders, respectively:
+```
+python main.py --data path_to_data --dataset_cache 
+
+See the README.md files inside of the per-site_cgcnn and per-site_painn submodules for more details. 
