@@ -12,3 +12,4 @@ vbm_cbm_proj.*
 *.pkl
 *data_cache
 *train
+*egg-info
