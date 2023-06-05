@@ -33,10 +33,8 @@ There are several datasets for per-site properties of bulk oxides available. Dow
 ```
 python download.py bulk_dos
 ```
-=======
+
 ## Downloading the data
 
 The data for training the per-site models can be downloaded using the following command:
-
  
->>>>>>> origin
