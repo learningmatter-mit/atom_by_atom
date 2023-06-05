@@ -26,4 +26,8 @@ conda env create -f environment.yml
 conda activate atombyatom
 ```
 
-Data for training per-site CGCNN can be found in the data folder. 
+## Downloading the data
+
+The data for training the per-site models can be downloaded using the following command:
+
+ 
