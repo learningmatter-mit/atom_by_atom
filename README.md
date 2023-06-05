@@ -19,7 +19,7 @@ git submodule update --remote --merge
 
 ## installation 
 
-atombyatom can be installed using the following line:
+We recommend installing the atombyatom package using the following line:
 ```
 pip install -e . # for developer mode
 ```
@@ -27,7 +27,6 @@ or
 ```
 pip install . 
 ```
-
 
 
 # Downloading the data from Atom by Atom Design of Metal Oxide Catalysts for the Oxygen Evolution Reaction with Machine Learning
