@@ -17,7 +17,7 @@ To only update the submodules:
 git submodule update --remote --merge
 ```
 
-## installation 
+## Installation 
 
 We recommend installing the atombyatom package using the following line:
 ```
