@@ -2,7 +2,6 @@ import argparse
 import os
 import pickle as pkl
 import sys
-import wandb
 import numpy as np
 
 import torch
@@ -20,58 +19,28 @@ from persite_painn.data.preprocess import convert_site_prop
 from persite_painn.utils.wandb_utils import save_artifacts
 
 parser = argparse.ArgumentParser(description="Per-site PaiNN")
-parser.add_argument("--data_raw", default="", type=str, help="path to raw data")
-parser.add_argument(
-    "--cache",
-    default="dataset_cache",
-    type=str,
-    help="cache where data is / will be stored",
-)
-parser.add_argument(
-    "--details", default="details.json", type=str, help="json file of model parameters"
-)
-parser.add_argument("--savedir", default="./results", type=str, help="saving directory")
-parser.add_argument(
-    "--workers", default=0, type=int, help="number of data loading workers"
-)
-parser.add_argument(
-    "--epochs", default=50, type=int, help="number of total epochs to run"
-)
-parser.add_argument(
-    "--start_epoch",
-    default=0,
-    type=int,
-    help="manual epoch number (useful on restarts)",
-)
+parser.add_argument("--data", default="", type=str, help="path to raw data")
+parser.add_argument("--data_cache", default="dataset_cache", type=str, help="cache where data is / will be stored")
+parser.add_argument("--results_dir", default="./results", type=str, help="saving directory")
+parser.add_argument("--workers", default=0, type=int, help="number of data loading workers")
+parser.add_argument("--epochs", default=50, type=int, help="number of total epochs to run")
+parser.add_argument("--start_epoch", default=0, type=int, help="manual epoch number (useful on restarts)")
 parser.add_argument("-b", "--batch_size", default=64, type=int, help="mini-batch size")
 parser.add_argument("--print_freq", default=10, type=int, help="print frequency")
 parser.add_argument("--resume", default="", type=str, help="path to latest checkpoint")
 parser.add_argument("--cuda", default=0, type=int, help="GPU setting")
 parser.add_argument("--device", default="cuda", type=str, help="cpu or cuda")
-parser.add_argument(
-    "--early_stop_val",
-    default=12,
-    type=int,
-    help="early stopping condition for validation loss update count",
-)
-parser.add_argument(
-    "--early_stop_train",
-    default=0.1,
-    type=float,
-    help="early stopping condition for train loss tolerance",
-)
-parser.add_argument(
-    "--seed",
-    default=None,
-    type=int,
-    help="Seed of random initialization to control the experiment",
-)
-parser.add_argument(
-    "--wandb",
-    default=False,
-    type=bool,
-    help="Whether to run with W & B",
-)
+parser.add_argument("--early_stop_val", default=12, type=int, help="early stopping condition for validation loss update count")
+parser.add_argument("--early_stop_train", default=0.1, type=float, help="early stopping condition for train loss tolerance")
+parser.add_argument("--seed", default=None, type=int, help="Seed of random initialization to control the experiment")
+parser.add_argument("--loss_fn", default="MSE", type=str, help="loss function")
+parser.add_argument("--metric_fn", default="MAE", type=str, help="metric function")
+parser.add_argument("--optimizer", default="Adam", type=str, help="optimizer")
+parser.add_argument("--scheduler", default="reduce_on_plateau", type=str, help="scheduler")
+parser.add_argument("--lr", default=0.002, type=float, help="initial learning rate")
+parser.add_argument("--weight_decay", default=0.0, type=float, help="learning rate decay")
+parser.add_argument("--val_size", default=0.1, type=float, help="validation set size")
+parser.add_argument("--test_size", default=0.1, type=float, help="test set size")
 
 def set_seed(seed: int = 42) -> None:
     np.random.seed(seed)
@@ -91,15 +60,6 @@ def main(args):
     # Load details
     wandb_config, details, modelparams, model_type = load_params_from_path(args.details)
 
-    # wandb Sigopt
-    if args.wandb:
-        wandb_config.update(details)
-        wandb_config.update(modelparams)
-        wandb.init(
-            project=wandb_config["project"],
-            name=wandb_config["name"],
-            config=wandb_config,
-        )
 
     # Load data
     if os.path.exists(args.cache):

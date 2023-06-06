@@ -1,6 +1,6 @@
 [submodule "per-site_cgcnn"]
-	path = per-site_cgcnn
+	path = atombyatom/models/per-site_cgcnn
 	url = git@github.com:learningmatter-mit/per-site_cgcnn.git
 [submodule "per-site_painn"]
-	path = per-site_painn
+	path = atombyatom/models/per-site_painn
 	url = git@github.com:learningmatter-mit/per-site_painn.git
