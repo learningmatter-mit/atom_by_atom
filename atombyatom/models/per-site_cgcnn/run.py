@@ -519,7 +519,12 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def save_checkpoint(state, is_best, filename=args.results_dir + 'checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, filename=args.results_dir + '/checkpoint.pth.tar'):
+
+    # if the directory doesn't exist, create it
+    if not os.path.exists(args.results_dir):
+        os.makedirs(args.results_dir)
+
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'model_best.pth.tar')
@@ -578,7 +583,7 @@ def main(args):
     structures, _, _ = dataset[0]
     orig_atom_fea_len = structures[0].shape[-1]
     nbr_fea_len = structures[1].shape[-1]
-    model = PerSiteCGCNet(orig_atom_fea_len, nbr_fea_len, len(args.site_prop),
+    model = PerSiteCGCNet(orig_atom_fea_len, nbr_fea_len, len(site_prop),
                             atom_fea_len=args.atom_fea_len,
                             n_conv=args.n_conv,
                             h_fea_len=args.h_fea_len,

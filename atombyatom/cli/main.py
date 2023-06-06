@@ -19,7 +19,6 @@ def main():
     run_parser.add_argument('--dataset', type=str, default='bulk_dos', help='Dataset to run on')
 
     args = parser.parse_args()
-    print(args.dataset)
 
     # Initialize the CLICommand class
     command = CLICommand()
