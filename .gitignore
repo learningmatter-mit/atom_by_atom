@@ -9,11 +9,6 @@ vbm_cbm_proj.*
 *.json.gz
 *.pickle
 *cache
-*.pkl
-*data_cache
 *train
 *egg-info
-<<<<<<< HEAD
 *.json
-=======
->>>>>>> origin
