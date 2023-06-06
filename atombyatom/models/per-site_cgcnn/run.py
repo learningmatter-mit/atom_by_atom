@@ -521,13 +521,9 @@ class AverageMeter(object):
 
 def save_checkpoint(state, is_best, filename=args.results_dir + '/checkpoint.pth.tar'):
 
-    # if the directory doesn't exist, create it
-    if not os.path.exists(args.results_dir):
-        os.makedirs(args.results_dir)
-
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, 'model_best.pth.tar')
+        shutil.copyfile(filename, args.results_dir + 'model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
