@@ -16,9 +16,16 @@ To only update the submodules:
 ```
 git submodule update --remote --merge
 ```
-This repository requires the following packages to run correctly, which can be pip installed with the pip_requirements.txt file:
+
+## Installation 
+
+We recommend installing the atombyatom package using the following line:
 ```
-pip install -r requirements.txt
+pip install -e . # for developer mode
+```
+or 
+```
+pip install . 
 ```
 
 
