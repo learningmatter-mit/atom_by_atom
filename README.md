@@ -2,7 +2,7 @@ This repo is under construction.
 
 # Atom by Atom Design of Metal Oxide Catalysts for the Oxygen Evolution Reaction with Machine Learning
 
-This software package includes all data, models, and analysis scripts necessary for reproducing "Atom by atom design of metal oxide catalysts for the oxygen evolution reaction with machine learning". More information about the data, models and analysis can be found [here](https://doi.org/10.48550/arXiv.2305.19930)
+This software package includes all data, models, and analysis scripts necessary for reproducing "Atom by atom design of metal oxide catalysts for the oxygen evolution reaction with machine learning". More information about the data, models and analysis can be found [here](https://doi.org/10.48550/arXiv.2305.19930).
 
 
 ## Installation 
