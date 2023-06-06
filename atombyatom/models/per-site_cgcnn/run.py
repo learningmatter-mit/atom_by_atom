@@ -4,7 +4,7 @@ import os
 import sys
 import warnings
 from random import sample
-import pickle as pkl
+import json
 import numpy as np
 import time
 import shutil
@@ -25,20 +25,20 @@ import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 
-from per_site_cgcnn.data import PerSiteData
-from per_site_cgcnn.data import collate_pool, get_train_val_test_loader
-from per_site_cgcnn.model import PerSiteCGCNet#, BindingEnergyCGCNet 
+from pymatgen import Structure
+
+from cgcnn.data import PerSiteData
+from cgcnn.data import collate_pool, get_train_val_test_loader
+from cgcnn.model import PerSiteCGCNet#, BindingEnergyCGCNet 
+
 
 #sys.path.append("../utils")
 #from utils import *
 #from surface_analyzer import *
 
-import sigopt
-
 os.environ["CUDA_VISIBLE_DEVICES"] = str(2)
 assert torch.cuda.is_available(), "cuda is not available"
 
-WORKDIR = os.getcwd()
 best_mae_error = 1e10
 
 #t_seed = random.randint(0,1000)
@@ -62,9 +62,9 @@ device = 'cuda'
 class Args():
 
     def __init__(self, 
-            data = "data/all_combined.pkl",
-            site_prop = ['magmom','bader','bandcenter'], 
+            data = "data/bulk_dos.json",
             data_cache = "dataset_cache",
+            results_dir = "results",
             workers = 0,
             epochs = 157,
             start_epoch = 0,
@@ -89,8 +89,8 @@ class Args():
             ):
 
         self.data = data
-        self.site_prop = site_prop
         self.data_cache = data_cache
+        self.results_dir = results_dir
         self.workers = workers
         self.epochs = epochs
         self.start_epoch = start_epoch
@@ -112,6 +112,42 @@ class Args():
         self.sched = sched
         self.lr_update_rate = lr_update_rate
         self.seed = seed
+
+
+# create an instance of the Arguments class
+args_default = Args()
+
+# create the parser
+parser = argparse.ArgumentParser()
+
+# add arguments to the parser
+parser.add_argument("--data", type=str, default=args_default.data)
+parser.add_argument("--data_cache", type=str, default=args_default.data_cache)
+parser.add_argument("--results_dir", type=str, default=args_default.results_dir)
+parser.add_argument("--workers", type=int, default=args_default.workers)
+parser.add_argument("--epochs", type=int, default=args_default.epochs)
+parser.add_argument("--start_epoch", type=int, default=args_default.start_epoch)
+parser.add_argument("--batch_size", type=int, default=args_default.batch_size)
+parser.add_argument("--lr", type=float, default=args_default.lr)
+parser.add_argument("--lr_milestones", type=int, default=args_default.lr_milestones)
+parser.add_argument("--momentum", type=float, default=args_default.momentum)
+parser.add_argument("--weight_decay", type=float, default=args_default.weight_decay)
+parser.add_argument("--print_freq", type=int, default=args_default.print_freq)
+parser.add_argument("--resume", type=str, default=args_default.resume)
+parser.add_argument("--train_ratio", type=float, default=args_default.train_ratio)
+parser.add_argument("--val_ratio", type=float, default=args_default.val_ratio)
+parser.add_argument("--test_ratio", type=float, default=args_default.test_ratio)
+parser.add_argument("--optim", type=str, default=args_default.optim)
+parser.add_argument("--atom_fea_len", type=int, default=args_default.atom_fea_len)
+parser.add_argument("--h_fea_len", type=int, default=args_default.h_fea_len)
+parser.add_argument("--n_conv", type=int, default=args_default.n_conv)
+parser.add_argument("--n_h", type=int, default=args_default.n_h)
+parser.add_argument("--sched", type=str, default=args_default.sched)
+parser.add_argument("--lr_update_rate", type=int, default=args_default.lr_update_rate)
+parser.add_argument("--seed", type=int, default=args_default.seed)
+
+# parse the arguments
+args = parser.parse_args()
 
 def flatten(t):
     return [item for sublist in t for item in sublist]
@@ -483,7 +519,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, filename=args.results_dir + 'checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'model_best.pth.tar')
@@ -499,15 +535,24 @@ def adjust_learning_rate(optimizer, epoch, k):
 
 def main(args):
     
-    global best_mae_error, WORKDIR
+    global best_mae_error
 
     set_seed(args.seed) # set torch, python, etc. seeds
 
-    # load data
-    data = pkl.load(open(args.data, 'rb'))
-    samples = [[id_, struct] for id_, struct in data.items()]
+    # load data from json
+    with open(args.data) as f:
+        data = json.load(f)
 
-    dataset = PerSiteData(samples, args.site_prop, WORKDIR, args.data_cache, random_seed=args.seed)
+    # reformat data into samples array
+    samples = [[key, Structure.from_dict(data[key])] for key in data.keys()]
+
+    # get site properties using the first sample
+    site_prop = list(samples[0][1].site_properties.keys())
+
+    # get directory this file is in
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    dataset = PerSiteData(samples, site_prop, dir_path, args.data_cache, random_seed=args.seed)
     collate_fn = collate_pool
     train_loader, val_loader, test_loader = get_train_val_test_loader(
         dataset=dataset,
@@ -638,27 +683,18 @@ def main(args):
     
 
     # test model
-    train_targets, train_preds, train_ids = validate(train_loader, model, criterion, normalizer, args, test=True)
-    val_targets, val_preds, val_ids = validate(val_loader, model, criterion, normalizer, args, test=True)
-    #return get_val_mae(val_targets, val_preds, val_ids)
-
     test_targets, test_preds, test_ids = validate(test_loader, model, criterion, normalizer, args, test=True)
-    # Save Test Results
-    pkl.dump(test_ids, open(f"test_ids.pkl", "wb"))
-    pkl.dump(test_preds, open(f"test_preds.pkl", "wb"))
-    pkl.dump(test_targets, open(f"test_targs.pkl", "wb"))
     
-    pkl.dump(train_ids, open(f"train_ids.pkl", "wb"))
-    pkl.dump(train_preds, open(f"train_preds.pkl", "wb"))
-    pkl.dump(train_targets, open(f"train_targs.pkl", "wb"))
-    
-    pkl.dump(val_ids, open(f"val_ids.pkl", "wb"))
-    pkl.dump(val_preds, open(f"val_preds.pkl", "wb"))
-    pkl.dump(val_targets, open(f"val_targs.pkl", "wb"))
+    # Save test_targets, test_preds, and test_ids to json files inside the results directory
+    with open(args.results_dir+'test_targets.json', 'w') as f:
+        json.dump(test_targets, f)
 
-args = Args(data='data/all_combined_clean_surface_and_bulk_no_benchmark_newref.pkl')
-#args = Args(data='data/bulk_dos_newref.pkl')
-#args = Args(data='data/bulk_bader_smaller.pkl')
-#args = Args(data='data/bulk_phonons.pkl')
+    with open(args.results_dir+'test_preds.json', 'w') as f:
+        json.dump(test_preds, f)
 
-mae = main(args)
+    with open(args.results_dir+'test_ids.json', 'w') as f:
+        json.dump(test_ids, f)
+
+
+if __name__ == '__main__':
+    main(args)

@@ -73,21 +73,18 @@ class ConvLayer(nn.Module):
         out = self.softplus2(atom_in_fea + nbr_sumed)
         return out
 
-
-class CrystalGraphConvNet(nn.Module):
+class PerSiteCGCNet(nn.Module):
     """
-    Create a crystal graph convolutional neural network for predicting total
+    Create a crystal graph convolutional neural network for predicting per-site
     material properties.
     """
-    def __init__(self, orig_atom_fea_len, nbr_fea_len,
+    def __init__(self, orig_atom_fea_len, nbr_fea_len, num_properties,
                  atom_fea_len=64, n_conv=3, h_fea_len=128, n_h=1,
                  classification=False):
         """
         Initialize CrystalGraphConvNet.
-
         Parameters
         ----------
-
         orig_atom_fea_len: int
           Number of atom features in the input.
         nbr_fea_len: int
@@ -101,7 +98,8 @@ class CrystalGraphConvNet(nn.Module):
         n_h: int
           Number of hidden layers after pooling
         """
-        super(CrystalGraphConvNet, self).__init__()
+
+        super(PerSiteCGCNet, self).__init__()
         self.classification = classification
         self.embedding = nn.Linear(orig_atom_fea_len, atom_fea_len)
         self.convs = nn.ModuleList([ConvLayer(atom_fea_len=atom_fea_len,
@@ -114,25 +112,17 @@ class CrystalGraphConvNet(nn.Module):
                                       for _ in range(n_h-1)])
             self.softpluses = nn.ModuleList([nn.Softplus()
                                              for _ in range(n_h-1)])
-        if self.classification:
-            self.fc_out = nn.Linear(h_fea_len, 2)
-        else:
-            self.fc_out = nn.Linear(h_fea_len, 1)
-        if self.classification:
-            self.logsoftmax = nn.LogSoftmax(dim=1)
-            self.dropout = nn.Dropout()
+
+        self.fc_out = nn.Linear(h_fea_len, num_properties)
 
     def forward(self, atom_fea, nbr_fea, nbr_fea_idx, crystal_atom_idx):
         """
         Forward pass
-
         N: Total number of atoms in the batch
         M: Max number of neighbors
         N0: Total number of crystals in the batch
-
         Parameters
         ----------
-
         atom_fea: Variable(torch.Tensor) shape (N, orig_atom_fea_len)
           Atom features from atom type
         nbr_fea: Variable(torch.Tensor) shape (N, M, nbr_fea_len)
@@ -141,47 +131,24 @@ class CrystalGraphConvNet(nn.Module):
           Indices of M neighbors of each atom
         crystal_atom_idx: list of torch.LongTensor of length N0
           Mapping from the crystal idx to atom idx
-
         Returns
         -------
-
-        prediction: nn.Variable shape (N, )
+        prediction: nn.Variable shape (N, sites_in_crystal)
           Atom hidden features after convolution
-
         """
+
         atom_fea = self.embedding(atom_fea)
         for conv_func in self.convs:
             atom_fea = conv_func(atom_fea, nbr_fea, nbr_fea_idx)
-        crys_fea = self.pooling(atom_fea, crystal_atom_idx)
-        crys_fea = self.conv_to_fc(self.conv_to_fc_softplus(crys_fea))
-        crys_fea = self.conv_to_fc_softplus(crys_fea)
-        if self.classification:
-            crys_fea = self.dropout(crys_fea)
+
+        atom_fea = self.conv_to_fc(self.conv_to_fc_softplus(atom_fea))
+        atom_fea = self.conv_to_fc_softplus(atom_fea)
         if hasattr(self, 'fcs') and hasattr(self, 'softpluses'):
             for fc, softplus in zip(self.fcs, self.softpluses):
-                crys_fea = softplus(fc(crys_fea))
-        out = self.fc_out(crys_fea)
-        if self.classification:
-            out = self.logsoftmax(out)
-        return out
+                atom_fea = softplus(fc(atom_fea))
+        out = self.fc_out(atom_fea)
+        
+        atom_fea = [atom_fea[idx_map] for idx_map in crystal_atom_idx]
+        out = [out[idx_map] for idx_map in crystal_atom_idx]
 
-    def pooling(self, atom_fea, crystal_atom_idx):
-        """
-        Pooling the atom features to crystal features
-
-        N: Total number of atoms in the batch
-        N0: Total number of crystals in the batch
-
-        Parameters
-        ----------
-
-        atom_fea: Variable(torch.Tensor) shape (N, atom_fea_len)
-          Atom feature vectors of the batch
-        crystal_atom_idx: list of torch.LongTensor of length N0
-          Mapping from the crystal idx to atom idx
-        """
-        assert sum([len(idx_map) for idx_map in crystal_atom_idx]) ==\
-            atom_fea.data.shape[0]
-        summed_fea = [torch.mean(atom_fea[idx_map], dim=0, keepdim=True)
-                      for idx_map in crystal_atom_idx]
-        return torch.cat(summed_fea, dim=0)
+        return out, atom_fea

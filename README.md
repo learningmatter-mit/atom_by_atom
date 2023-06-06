@@ -40,8 +40,14 @@ The datasets will be downloaded inside the data folder as data/bulk_dos.json etc
 
 # Running the per-site cgcnn and per-site painn codes
 
-Per-site CGCNN and Per-site PAINN can be trained/tested on the downloaded datasets by running the following line inside of the per-site_cgcnn and per-site_painn folders, respectively:
+Per-site CGCNN and Per-site PAINN can be trained/tested on the downloaded datasets by running the following line:
 ```
-python main.py --data path_to_data --dataset_cache 
+atombyatom run model_name --dataset dataset_name
+```
 
-See the README.md files inside of the per-site_cgcnn and per-site_painn submodules for more details. 
+For example, to run per-site_cgcnn on the bulk_dos data, you would run the following line:
+```
+atombyatom run per-site_cgcnn --dataset bulk_dos
+```
+
+The results of running the model (including the train/val/test results, and a checkpoint of the best model) are stored in the atombyatom/results/model_name/dataset_name directory. the README.md files inside of the per-site_cgcnn and per-site_painn submodules for more details about these two models.  
