@@ -25,7 +25,7 @@ import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 
-from pymatgen import Structure
+from pymatgen.core.structure import Structure
 
 from cgcnn.data import PerSiteData
 from cgcnn.data import collate_pool, get_train_val_test_loader
@@ -523,7 +523,7 @@ def save_checkpoint(state, is_best, filename=args.results_dir + '/checkpoint.pth
 
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, args.results_dir + 'model_best.pth.tar')
+        shutil.copyfile(filename, args.results_dir + '/model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
@@ -679,22 +679,17 @@ def main(args):
             break
 
     # load the best model
-    best_checkpoint = torch.load('model_best.pth.tar')
+    best_checkpoint = torch.load(args.results_dir + '/model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     
 
     # test model
     test_targets, test_preds, test_ids = validate(test_loader, model, criterion, normalizer, args, test=True)
-    
-    # Save test_targets, test_preds, and test_ids to json files inside the results directory
-    with open(args.results_dir+'test_targets.json', 'w') as f:
-        json.dump(test_targets, f)
 
-    with open(args.results_dir+'test_preds.json', 'w') as f:
-        json.dump(test_preds, f)
-
-    with open(args.results_dir+'test_ids.json', 'w') as f:
-        json.dump(test_ids, f)
+    # Save test_targets, test_preds, and test_ids to csv files inside the results directory
+    np.savetxt(args.results_dir + '/test_targets.csv', test_targets, delimiter=',')
+    np.savetxt(args.results_dir + '/test_preds.csv', test_preds, delimiter=',')
+    np.savetxt(args.results_dir + '/test_ids.csv', test_ids, delimiter=',')
 
 
 if __name__ == '__main__':

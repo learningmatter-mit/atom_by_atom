@@ -3,9 +3,12 @@ import os
 import pickle as pkl
 import sys
 import numpy as np
+import json
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler
+
+from pymatgen.core.structure import Structure
 
 from persite_painn.data.sampler import ImbalancedDatasetSampler
 from persite_painn.data import collate_dicts
@@ -16,7 +19,6 @@ from persite_painn.train.trainer import Trainer
 from persite_painn.train.evaluate import test_model
 from persite_painn.utils.train_utils import Normalizer
 from persite_painn.data.preprocess import convert_site_prop
-from persite_painn.utils.wandb_utils import save_artifacts
 
 parser = argparse.ArgumentParser(description="Per-site PaiNN")
 parser.add_argument("--data", default="", type=str, help="path to raw data")
@@ -32,7 +34,7 @@ parser.add_argument("--cuda", default=0, type=int, help="GPU setting")
 parser.add_argument("--device", default="cuda", type=str, help="cpu or cuda")
 parser.add_argument("--early_stop_val", default=12, type=int, help="early stopping condition for validation loss update count")
 parser.add_argument("--early_stop_train", default=0.1, type=float, help="early stopping condition for train loss tolerance")
-parser.add_argument("--seed", default=None, type=int, help="Seed of random initialization to control the experiment")
+parser.add_argument("--seed", default=42, type=int, help="Seed of random initialization to control the experiment")
 parser.add_argument("--loss_fn", default="MSE", type=str, help="loss function")
 parser.add_argument("--metric_fn", default="MAE", type=str, help="metric function")
 parser.add_argument("--optimizer", default="Adam", type=str, help="optimizer")
@@ -57,52 +59,49 @@ def set_seed(seed: int = 42) -> None:
 def main(args):
 
     set_seed(args.seed)
-    # Load details
-    wandb_config, details, modelparams, model_type = load_params_from_path(args.details)
-
 
     # Load data
-    if os.path.exists(args.cache):
+    if os.path.exists(args.data_cache):
         print("Cached dataset exists...")
-        dataset = torch.load(args.cache)
+        dataset = torch.load(args.data_cache)
         print(f"Number of Data: {len(dataset)}")
     else:
         try:
-            data = pkl.load(open(args.data_raw, "rb"))
+            # read data from json
+            with open(args.data) as f:
+                data = json.load(f)
+
         except ValueError:
             print("Path to data should be given --data")
         else:
             print("Start making dataset...")
-            if details["multifidelity"]:
-                new_data = convert_site_prop(
-                    data,
-                    details["output_keys"],
-                    details["fidelity_keys"],
-                )
-                dataset = build_dataset(
-                    raw_data=new_data,
-                    cutoff=modelparams["cutoff"],
-                    multifidelity=details["multifidelity"],
-                    seed=args.seed,
-                )
-            else:
-                new_data = convert_site_prop(data, details["output_keys"])
-                dataset = build_dataset(
-                    raw_data=new_data,
-                    cutoff=modelparams["cutoff"],
-                    multifidelity=details["multifidelity"],
-                    seed=args.seed,
-                )
+
+            # convert data to the correct format
+            samples = {}
+            for key in data.keys():
+                samples.update({key:Structure.from_dict(data[key])})
+            data = samples
+
+            # get site properties using the first sample
+            site_prop = list(data[list(data.keys())[0]].site_properties.keys())
+
+            new_data = convert_site_prop(data, site_prop)
+            dataset = build_dataset(
+                raw_data=new_data,
+                cutoff=4.0,
+                multifidelity="False",
+                seed=args.seed,
+            )
 
             print(f"Number of Data: {len(dataset)}")
             print("Done creating dataset, caching...")
-            dataset.save(args.cache)
+            dataset.save(args.data_cache)
             print("Done caching dataset")
 
     train_set, val_set, test_set = split_train_validation_test(
         dataset,
-        val_size=details["val_size"],
-        test_size=details["test_size"],
+        val_size=args.val_size,
+        test_size=args.test_size,
         seed=args.seed,
     )
 
@@ -118,36 +117,11 @@ def main(args):
     modelparams.update({"means": {"target": normalizer_target.mean}})
     modelparams.update({"stddevs": {"target": normalizer_target.std}})
 
-    if details["multifidelity"]:
-        fidelity = []
-        for batch in train_set:
-            fidelity.append(batch["fidelity"])
-        fidelity = torch.concat(fidelity)
-
-        normalizer_fidelity = Normalizer(fidelity, "fidelity")
-        normalizer["fidelity"] = normalizer_fidelity
-        modelparams.update(
-            {
-                "means": {
-                    "target": normalizer_target.mean,
-                    "fidelity": normalizer_fidelity.mean,
-                }
-            }
-        )
-        modelparams.update(
-            {
-                "stddevs": {
-                    "target": normalizer_target.mean,
-                    "fidelity": normalizer_fidelity.std,
-                }
-            }
-        )
-
     # Get model
     model = get_model(
         modelparams,
         model_type=model_type,
-        multifidelity=details["multifidelity"],
+        multifidelity="false",
     )
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
 

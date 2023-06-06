@@ -26,18 +26,12 @@ def build_dataset(
 
 
 def compute_prop(id_, crystal, multifidelity):
-    if multifidelity:
-        target = crystal.site_properties["target"]
-        fidelity = crystal.site_properties["fidelity"]
-        index = compute_balanced_batch_index(target)
-        if len(target) == 1:
-            target = np.array(target).reshape(-1, 1)
-    else:
-        target = crystal.site_properties["target"]
-        if len(target) == 1:
-            target = np.array(target).reshape(-1, 1)
-        fidelity = None
-        index = None
+
+    target = crystal.site_properties["target"]
+    if len(target) == 1:
+        target = np.array(target).reshape(-1, 1)
+    fidelity = None
+    index = None
     structure = AA.get_atoms(crystal)
     n = np.asarray(structure.numbers).reshape(-1, 1)
     xyz = np.asarray(structure.positions)
