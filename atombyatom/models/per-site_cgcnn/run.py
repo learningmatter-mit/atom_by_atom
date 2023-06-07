@@ -9,6 +9,7 @@ import numpy as np
 import time
 import shutil
 from tqdm import tqdm
+import pickle as pkl
 
 import torch.nn as nn
 import torch.optim as optim
@@ -66,7 +67,7 @@ class Args():
             data_cache = "dataset_cache",
             results_dir = "results",
             workers = 0,
-            epochs = 157,
+            epochs = 1,
             start_epoch = 0,
             batch_size = 64,
             lr = 0.00363,
@@ -685,11 +686,10 @@ def main(args):
 
     # test model
     test_targets, test_preds, test_ids = validate(test_loader, model, criterion, normalizer, args, test=True)
-
-    # Save test_targets, test_preds, and test_ids to csv files inside the results directory
-    np.savetxt(args.results_dir + '/test_targets.csv', test_targets, delimiter=',')
-    np.savetxt(args.results_dir + '/test_preds.csv', test_preds, delimiter=',')
-    np.savetxt(args.results_dir + '/test_ids.csv', test_ids, delimiter=',')
+    
+    pkl.dump(test_ids, open(args.results_dir + "/test_ids.pkl", "wb"))
+    pkl.dump(test_preds, open(args.results_dir + "/test_preds.pkl", "wb"))
+    pkl.dump(test_targets, open(args.results_dir + "/test_targs.pkl", "wb"))
 
 
 if __name__ == '__main__':

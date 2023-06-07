@@ -1,5 +1,4 @@
 import gdown
-import argparse
 from atombyatom.data import DEFAULT_DATA_PATH
 
 url_dict = {'bulk_dos': 'https://drive.google.com/uc?id=1mLQYkamCFf-68FE_crt476mShs-zOue1'}

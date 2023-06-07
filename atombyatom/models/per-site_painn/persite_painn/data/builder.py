@@ -10,7 +10,7 @@ from .dataset import Dataset
 def build_dataset(
     raw_data,
     cutoff=5.0,
-    multifidelity=False,
+    multifidelity="False",
     seed=1234,
 ) -> Dataset:
     samples = [[id_, struct] for id_, struct in raw_data.items()]
@@ -26,12 +26,18 @@ def build_dataset(
 
 
 def compute_prop(id_, crystal, multifidelity):
-
-    target = crystal.site_properties["target"]
-    if len(target) == 1:
-        target = np.array(target).reshape(-1, 1)
-    fidelity = None
-    index = None
+    if multifidelity:
+        target = crystal.site_properties["target"]
+        fidelity = crystal.site_properties["fidelity"]
+        index = compute_balanced_batch_index(target)
+        if len(target) == 1:
+            target = np.array(target).reshape(-1, 1)
+    else:
+        target = crystal.site_properties["target"]
+        if len(target) == 1:
+            target = np.array(target).reshape(-1, 1)
+        fidelity = None
+        index = None
     structure = AA.get_atoms(crystal)
     n = np.asarray(structure.numbers).reshape(-1, 1)
     xyz = np.asarray(structure.positions)
@@ -43,7 +49,7 @@ def compute_prop(id_, crystal, multifidelity):
 
 def gen_props_from_file(
     samples,
-    multifidelity=True,
+    multifidelity=False,
     seed=1234,
 ):
     """Summary

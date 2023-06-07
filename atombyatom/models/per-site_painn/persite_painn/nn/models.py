@@ -55,74 +55,32 @@ class Painn(nn.Module):
             ]
         )
         # Fully connected layers
-        self.multifidelity = kwargs["multifidelity"]
         output_atom_fea_dim = modelparams["atom_fea_len"]
         n_h = modelparams["n_h"]
         h_fea_len = modelparams["h_fea_len"]
         n_outputs = modelparams["n_outputs"]
         activation_f = modelparams["activation_f"]
 
-        if self.multifidelity:
-            self.readout_block = ReadoutBlock(
-                feat_dim=feat_dim,
-                output_atom_fea=output_atom_fea_dim["atom_emb"],
-                output_keys=["atom_emb"],
-                activation=activation,
-                dropout=readout_dropout["atom_emb"],
-            )
-            self.readout_block_target = ReadoutBlock(
-                feat_dim=output_atom_fea_dim["atom_emb"],
-                output_atom_fea=output_atom_fea_dim["target"],
-                output_keys=["target"],
-                activation=activation,
-                dropout=readout_dropout["target"],
-            )
-
-            self.fn_fidelity = FullyConnected(
-                output_atom_fea_dim=output_atom_fea_dim["atom_emb"],
-                h_fea_len=h_fea_len["fidelity"],
-                n_h=n_h["fidelity"],
-                activation=activation_f,
-                n_outputs=n_outputs["fidelity"],
-                dropout=fc_dropout["fidelity"],
-                output_key="fidelity",
-                scale=True,
-                means=self.means,
-                stddevs=self.stddevs,
-            )
-            self.fn_target = FullyConnected(
-                output_atom_fea_dim=output_atom_fea_dim["target"]
-                + n_outputs["fidelity"],
-                h_fea_len=h_fea_len["target"],
-                n_h=n_h["target"],
-                activation=activation_f,
-                n_outputs=n_outputs["target"],
-                dropout=fc_dropout["target"],
-                output_key="target",
-                scale=True,
-                means=self.means,
-                stddevs=self.stddevs,
-            )
-        else:
-            self.readout_block = ReadoutBlock(
-                feat_dim=feat_dim,
-                output_atom_fea=output_atom_fea_dim["target"],
-                output_keys=["target"],
-                activation=activation,
-                dropout=readout_dropout["target"],
-            )
-            self.fn = FullyConnected(
-                output_atom_fea_dim=output_atom_fea_dim["target"],
-                h_fea_len=h_fea_len["target"],
-                n_h=n_h["target"],
-                activation=activation_f,
-                n_outputs=n_outputs["target"],
-                dropout=fc_dropout["target"],
-                output_key="target",
-                scale=True,
-                means=self.means,
-                stddevs=self.stddevs,
-            )
+        
+        self.readout_block = ReadoutBlock(
+            feat_dim=feat_dim,
+            output_atom_fea=output_atom_fea_dim["target"],
+            output_keys=["target"],
+            activation=activation,
+            dropout=readout_dropout["target"],
+        )
+        self.fn = FullyConnected(
+            output_atom_fea_dim=output_atom_fea_dim["target"],
+            h_fea_len=h_fea_len["target"],
+            n_h=n_h["target"],
+            activation=activation_f,
+            n_outputs=n_outputs["target"],
+            dropout=fc_dropout["target"],
+            output_key="target",
+            scale=True,
+            means=self.means,
+            stddevs=self.stddevs,
+        )
 
         self.cutoff = cutoff
 

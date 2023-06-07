@@ -29,7 +29,6 @@ parser.add_argument("--epochs", default=50, type=int, help="number of total epoc
 parser.add_argument("--start_epoch", default=0, type=int, help="manual epoch number (useful on restarts)")
 parser.add_argument("-b", "--batch_size", default=64, type=int, help="mini-batch size")
 parser.add_argument("--print_freq", default=10, type=int, help="print frequency")
-parser.add_argument("--resume", default="", type=str, help="path to latest checkpoint")
 parser.add_argument("--cuda", default=0, type=int, help="GPU setting")
 parser.add_argument("--device", default="cuda", type=str, help="cpu or cuda")
 parser.add_argument("--early_stop_val", default=12, type=int, help="early stopping condition for validation loss update count")
@@ -89,7 +88,7 @@ def main(args):
             dataset = build_dataset(
                 raw_data=new_data,
                 cutoff=4.0,
-                multifidelity="False",
+                multifidelity=False,
                 seed=args.seed,
             )
 
@@ -114,107 +113,99 @@ def main(args):
     targs = torch.concat(targs)
     normalizer_target = Normalizer(targs, "target")
     normalizer["target"] = normalizer_target
+
+    # model parameters
+
+    modelparams = {
+        "feat_dim": 98,
+        "activation": "learnable_swish",
+        "learnable_k": "true",
+        "activation_f": "swish",
+        "n_rbf": 22,
+        "cutoff": 4.0,
+        "num_conv": 4,
+        "conv_dropout": 0.15,
+        "atom_fea_len": {
+            "target": 128
+        },
+        "h_fea_len": {
+            "target": 256
+        },
+        "n_h": {
+            "target": 2
+        },
+        "readout_dropout": {
+            "target": 0.2964440824923512
+        },
+        "fc_dropout": {
+            "target": 0.08124243479440758
+        },
+        "n_outputs": {
+            "target": 3
+        },
+        "loss_coeff": {
+            "target": 1.0
+        }
+    }
+
     modelparams.update({"means": {"target": normalizer_target.mean}})
     modelparams.update({"stddevs": {"target": normalizer_target.std}})
 
     # Get model
     model = get_model(
         modelparams,
-        model_type=model_type,
-        multifidelity="false",
+        model_type="Painn",
+        multifidelity="False",
     )
+    print(model)
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
 
     # Set optimizer
     optimizer = get_optimizer(
-        optim=details["optim"],
+        optim=args.optimizer,
         trainable_params=trainable_params,
-        lr=details["lr"],
-        weight_decay=details["weight_decay"],
+        lr=args.lr,
+        weight_decay=args.weight_decay,
     )
 
-    # optionally resume from a checkpoint
-    if args.resume:
-        if os.path.isfile(args.resume):
-            if args.start_epoch != 0:
-                print("=> loading checkpoint '{}'".format(args.resume))
-                checkpoint = torch.load(args.resume)
-                best_metric = checkpoint["best_metric"]
-                best_loss = checkpoint["best_loss"]
-                model.load_state_dict(checkpoint["state_dict"])
-                optimizer.load_state_dict(checkpoint["optimizer"])
-                args.start_epoch = checkpoint["epoch"]
-                normalizer.load_state_dict(checkpoint["normalizer"])
-            elif args.start_epoch == 0:
-                checkpoint = torch.load(args.resume)
-                best_metric = checkpoint["best_metric"]
-                best_loss = checkpoint["best_loss"]
-                model.load_state_dict(checkpoint["state_dict"])
-                optimizer.load_state_dict(checkpoint["optimizer"])
-                normalizer.load_state_dict(checkpoint["normalizer"])
-
-            print(
-                "=> loaded checkpoint '{}' (epoch {})".format(
-                    args.resume, checkpoint["epoch"]
-                )
-            )
-        else:
-            print("=> no checkpoint found at '{}'".format(args.resume))
-    else:
-        best_metric = 1e10
-        best_loss = 1e10
-
-    # Set loss function
-    if details["multifidelity"]:
-        loss_coeff = {"fidelity": 1.0 - modelparams["loss_coeff"]["target"], "target": modelparams["loss_coeff"]["target"]}
-        correspondence_keys = {"fidelity": "fidelity", "target": "target"}
-    else:
-        loss_coeff = {"target": 1.0}
-        correspondence_keys = {"target": "target"}
+    loss_coeff = {"target": 1.0}
+    correspondence_keys = {"target": "target"}
     # Set loss function
     # TODO: normalier issue
     loss_fn = get_loss_metric_fn(
         loss_coeff=loss_coeff,
         correspondence_keys=correspondence_keys,
-        operation_name=details["loss_fn"],
+        operation_name=args.loss_fn,
         normalizer=None,
     )
     # Set metric function
     metric_fn = get_loss_metric_fn(
         loss_coeff=loss_coeff,
         correspondence_keys=correspondence_keys,
-        operation_name=details["metric_fn"],
+        operation_name=args.metric_fn,
         normalizer=None,
     )
 
     # Set scheduler
     scheduler = get_scheduler(
-        sched=details["sched"], optimizer=optimizer, epochs=args.epochs
+        sched=args.scheduler, optimizer=optimizer, epochs=args.epochs
     )
 
     # Set DataLoader
-    if details["multifidelity"]:
-        train_loader = DataLoader(
-            train_set,
-            batch_size=args.batch_size,
-            num_workers=args.workers,
-            collate_fn=collate_dicts,
-            sampler=ImbalancedDatasetSampler("classification", train_set.props),
-        )
-    else:
-        train_loader = DataLoader(
-            train_set,
-            batch_size=args.batch_size,
-            num_workers=args.workers,
-            collate_fn=collate_dicts,
-            sampler=RandomSampler(train_set),
-        )
+    train_loader = DataLoader(
+        train_set,
+        batch_size=args.batch_size,
+        num_workers=args.workers,
+        collate_fn=collate_dicts,
+        sampler=RandomSampler(train_set),
+    )
     val_loader = DataLoader(
         val_set,
         batch_size=args.batch_size,
         num_workers=args.workers,
         collate_fn=collate_dicts,
     )
+
     # Save ids
     train_ids = []
     for item in train_set:
@@ -229,19 +220,14 @@ def main(args):
         else:
             val_ids.append(item["name"].item())
 
-    pkl.dump(train_ids, open(f"{args.savedir}/train_ids.pkl", "wb"))
-    pkl.dump(val_ids, open(f"{args.savedir}/val_ids.pkl", "wb"))
+    pkl.dump(train_ids, open(f"{args.results_dir}/train_ids.pkl", "wb"))
+    pkl.dump(val_ids, open(f"{args.results_dir}/val_ids.pkl", "wb"))
 
     early_stop = [args.early_stop_val, args.early_stop_train]
 
-    # Turn off gradient
-    if details["multifidelity"]:
-        for param in model.fn_target.conv_to_fc.parameters():
-            param.requires_grad = False
-
     # set Trainer
     trainer = Trainer(
-        model_path=args.savedir,
+        model_path=args.results_dir,
         model=model,
         loss_fn=loss_fn,
         metric_fn=metric_fn,
@@ -249,10 +235,13 @@ def main(args):
         scheduler=scheduler,
         train_loader=train_loader,
         validation_loader=val_loader,
-        run_wandb=args.wandb,
+        run_wandb=False,
         normalizer=normalizer,
     )
     # Train
+    best_metric = 1e10
+    best_loss = 1e10
+    
     _ = trainer.train(
         device=args.device,
         start_epoch=args.start_epoch,
@@ -271,7 +260,7 @@ def main(args):
     test_targets = []
     test_preds = []
 
-    best_checkpoint = torch.load(f"{args.savedir}/best_model.pth.tar")
+    best_checkpoint = torch.load(f"{args.results_dir}/best_model.pth.tar")
     model.load_state_dict(best_checkpoint["state_dict"])
 
     (
@@ -287,24 +276,13 @@ def main(args):
         metric_fn=metric_fn,
         device="cpu",
         # normalizer=normalizer,
-        multifidelity=details["multifidelity"],
+        multifidelity=False,
     )
     print(f"TEST Accuracy: {metric_out}")
     # Save Test Results
-    pkl.dump(test_ids, open(f"{args.savedir}/test_ids.pkl", "wb"))
-    pkl.dump(test_preds, open(f"{args.savedir}/test_preds.pkl", "wb"))
-    pkl.dump(test_targets, open(f"{args.savedir}/test_targs.pkl", "wb"))
-    if details["multifidelity"]:
-        pkl.dump(
-            test_preds_fidelity, open(f"{args.savedir}/test_preds_fidelity.pkl", "wb")
-        )
-        pkl.dump(
-            test_targets_fidelity, open(f"{args.savedir}/test_targs_fidelity.pkl", "wb")
-        )
-
-    # save wandb artifacts
-    if args.wandb:
-        save_artifacts(args.savedir, details["multifidelity"])
+    pkl.dump(test_ids, open(f"{args.results_dir}/test_ids.pkl", "wb"))
+    pkl.dump(test_preds, open(f"{args.results_dir}/test_preds.pkl", "wb"))
+    pkl.dump(test_targets, open(f"{args.results_dir}/test_targs.pkl", "wb"))
 
 
 if __name__ == "__main__":
