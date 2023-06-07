@@ -36,7 +36,7 @@ pip install .
 
 There are several datasets for per-site properties of bulk oxides available. You can download the datasets using the following commands: 
 ```
-atombyatom download bulk_dos
+atombyatom download --dataset bulk_dos
 ```
 
 The datasets will be downloaded inside the data folder as data/bulk_dos.json etc.
