@@ -4,3 +4,6 @@
 [submodule "per-site_painn"]
 	path = atombyatom/models/per-site_painn
 	url = git@github.com:learningmatter-mit/per-site_painn.git
+[submodule "atombyatom/models/CrabNet"]
+	path = atombyatom/models/CrabNet
+	url = git@github.com:anthony-wang/CrabNet.git

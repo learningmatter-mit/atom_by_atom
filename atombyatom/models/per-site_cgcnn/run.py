@@ -38,7 +38,7 @@ from cgcnn.model import PerSiteCGCNet#, BindingEnergyCGCNet
 #from surface_analyzer import *
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(2)
-assert torch.cuda.is_available(), "cuda is not available"
+#assert torch.cuda.is_available(), "cuda is not available"
 
 best_mae_error = 1e10
 
@@ -57,8 +57,6 @@ def set_seed(seed: int = 42) -> None:
     os.environ["PYTHONHASHSEED"] = str(seed)
     print(f"Random seed set as {seed}")
 
-    
-device = 'cuda'
 
 class Args():
 
@@ -67,7 +65,7 @@ class Args():
             data_cache = "dataset_cache",
             results_dir = "results",
             workers = 0,
-            epochs = 1,
+            epochs = 157,
             start_epoch = 0,
             batch_size = 64,
             lr = 0.00363,
@@ -149,6 +147,10 @@ parser.add_argument("--seed", type=int, default=args_default.seed)
 
 # parse the arguments
 args = parser.parse_args()
+
+# identify if cuda is available
+args.cuda = torch.cuda.is_available()
+device = torch.device("cuda" if args.cuda else "cpu")
 
 def flatten(t):
     return [item for sublist in t for item in sublist]
@@ -585,10 +587,13 @@ def main(args):
                             n_conv=args.n_conv,
                             h_fea_len=args.h_fea_len,
                             n_h=args.n_h)
+
     param_list = []
     param_list.append(model.fc_out.weight.detach().cpu().numpy())
 
-    model.cuda()
+    # move model to gpu if available
+    if args.cuda:
+        model.cuda()
 
     # define loss func and optimizer
     criterion = nn.MSELoss()

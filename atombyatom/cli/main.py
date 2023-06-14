@@ -58,7 +58,7 @@ def main():
 
     # Create a parser for the 'run' command
     run_parser = subparsers.add_parser('run', help='run model')
-    run_parser.add_argument('model', default='per-site_cgcnn', help='Model to run')
+    run_parser.add_argument('--model', default='per-site_cgcnn', help='Model to run')
     run_parser.add_argument('--dataset', type=str, default='bulk_dos', help='Dataset to run on')
 
     args = parser.parse_args()
@@ -66,11 +66,8 @@ def main():
     # Initialize the CLICommand class
     command = CLICommand()
 
-    print(args.dataset)
-
     # Based on the command name, call the appropriate function
     if args.command == 'download':
-        print(command)
         command.download(dataset=args.dataset)
 
     elif args.command == 'run':
