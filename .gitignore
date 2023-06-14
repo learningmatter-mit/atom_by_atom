@@ -8,6 +8,7 @@
 vbm_cbm_proj.*
 *.json.gz
 *.pickle
+*.pkl
 *cache
 *train
 *egg-info
