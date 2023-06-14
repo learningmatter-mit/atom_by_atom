@@ -12,4 +12,3 @@ vbm_cbm_proj.*
 *train
 *egg-info
 atombyatom/data/*.json
-*per-site_crabnet*

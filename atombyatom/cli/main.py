@@ -3,7 +3,7 @@ import argparse
 import subprocess
 import os
 import gdown
-from atombyatom.data import DEFAULT_DATA_PATH, DEFAULT_MODELS_PATH, DEFAULT_RESULTS_PATH
+from atombyatom.data import DEFAULT_DATA_PATH, DEFAULT_MODELS_PATH, DEFAULT_RESULTS_PATH, DEFAULT_ANALYSIS_PATH
 
 url_dict = {'bulk_dos': 'https://drive.google.com/uc?id=1mLQYkamCFf-68FE_crt476mShs-zOue1'}
 
@@ -43,6 +43,19 @@ class CLICommand:
         subprocess.call(['python', run_file, '--data', dataset_file, '--data_cache', 
                          data_cache, '--results_dir', results_dir])
         
+    def analyze(self, model, dataset):
+
+        '''
+        Analyze the results of the model on the dataset
+        '''
+
+        # results directory
+        results_dir = DEFAULT_RESULTS_PATH + model + '/' + dataset
+        analysis_file = DEFAULT_ANALYSIS_PATH + 'plot_parity_bulk.py'
+
+        # call analysis script with arguments
+        subprocess.call(['python', analysis_file, '--results_dir', results_dir])
+        
 
 
 
@@ -61,6 +74,11 @@ def main():
     run_parser.add_argument('--model', default='per-site_cgcnn', help='Model to run')
     run_parser.add_argument('--dataset', type=str, default='bulk_dos', help='Dataset to run on')
 
+    # Create a parser for the 'analyze' command
+    analyze_parser = subparsers.add_parser('analyze', help='analyze results')
+    analyze_parser.add_argument('--model', default='per-site_cgcnn', help='Model to analyze')
+    analyze_parser.add_argument('--dataset', type=str, default='bulk_dos', help='Dataset to analyze')
+
     args = parser.parse_args()
 
     # Initialize the CLICommand class
@@ -72,6 +90,9 @@ def main():
 
     elif args.command == 'run':
         command.run(model=args.model, dataset=args.dataset)
+
+    elif args.command == 'analyze':
+        command.analyze(model=args.model, dataset=args.dataset)
 
     else:
         parser.print_help()
