@@ -43,16 +43,26 @@ The datasets will be downloaded inside the data folder as data/bulk_dos.json etc
 
 ## Running the per-site cgcnn, per-site painn, and per-site crabnet codes
 
-Per-site CGCNN models can be trained/tested on the downloaded datasets by running the following line:
+Per-site models can be trained/tested on the downloaded datasets by running the following line:
 ```
-atombyatom run model_name --dataset dataset_name
+atombyatom run --model model_name --dataset dataset_name
 ```
 
 For example, to run per-site_cgcnn on the bulk_dos data, you would run the following line:
 ```
-atombyatom run per-site_cgcnn --dataset bulk_dos
+atombyatom run --model per-site_cgcnn --dataset bulk_dos
 ```
 
-The results of running the model (including the train/val/test results, and a checkpoint of the best model) are stored in the atombyatom/results/model_name/dataset_name directory. the README.md files inside of the per-site_cgcnn, per-site_painn and per-site_crabnet submodules for more details about these models. 
+This command assumes you have already downloaded the dataset of interest, and that this dataset is available in the appropriate data folder and with the appropriate name (see above). The results of running the model (including the train/val/test results, and a checkpoint of the best model) are stored in the atombyatom/results/model_name/dataset_name directory. the README.md files inside of the per-site_cgcnn, per-site_painn and per-site_crabnet submodules for more details about these models. 
 
-## Analyzing the  
+## Analyzing the model results
+
+After running the models, it is possible to plot results from the test set using the following line:
+```
+atombyatom analyze --model model_name --dataset dataset_name --plot_type plot_type
+```
+This command assumes that you have already downloaded the dataset of interest and run the model of interest on this dataset. The plot_type options include:
+```
+parity
+violin
+``` 
