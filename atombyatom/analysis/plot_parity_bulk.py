@@ -11,6 +11,9 @@ def flatten(l):
 # create parser
 parser = argparse.ArgumentParser()
 parser.add_argument('--results_dir', type=str, default='results/')
+parser.add_argument('--model', type=str, default='per-site_crabnet')
+parser.add_argument('--dataset', type=str, default='bulk_dos')
+parser.add_argument('--site_prop', type=str, default='bandcenter')
 
 # parse arguments
 args = parser.parse_args()
@@ -20,12 +23,12 @@ test_ids = pkl.load(open(args.results_dir + '/test_ids.pkl', 'rb'))
 test_targets = pkl.load(open(args.results_dir + '/test_targs.pkl', 'rb'))
 test_preds = pkl.load(open(args.results_dir + '/test_preds.pkl', 'rb'))
 
-if 'per-site_crabnet' in args.results_dir:
+if args.model == 'per-site_crabnet':
     
     test_targets = flatten(test_targets)
     test_preds = flatten(test_preds)
 
-elif 'per-site_cgcnn' in args.results_dir:
+elif args.model == 'per-site_cgcnn':
 
     site_targs = []
     site_preds = []
@@ -51,6 +54,6 @@ indexes = np.where(~np.isnan(np.array(test_targets)))[0]
 fig, ax = plt.subplots(figsize=(5,5))
 _, _, ax, _ = plot_hexbin(np.array(test_targets)[indexes], np.array(test_preds)[indexes], fig, ax, bins='log', cmap='gray_r')
 
-plt.xlabel('calculated valence band center (eV)')
-plt.ylabel('predicted valence band center (eV)')
+plt.xlabel('calculated site band center (eV)')
+plt.ylabel('predicted site band center (eV)')
 plt.show()

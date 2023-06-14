@@ -491,11 +491,11 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def save_checkpoint(state, is_best, filename=args.results_dir + '/checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, filename=args.results_dir + '/' + args.site_prop + '_checkpoint.pth.tar'):
 
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, args.results_dir + '/model_best.pth.tar')
+        shutil.copyfile(filename, args.results_dir + '/' + args.site_prop + 'model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
@@ -522,7 +522,6 @@ def main(args):
     # get directory this file is in
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    # CAUTION! HARD CODED IN THE SITE PROPERTY WE ARE PREDICTING, WILL NEED TO ADJUST THIS LATER
     dataset = PerSiteData(samples, args.site_prop, dir_path, args.data_cache, random_seed=args.seed)
 
     train_loader, val_loader, test_loader = get_train_val_test_loader(
@@ -626,16 +625,16 @@ def main(args):
             break
 
     # load the best model
-    best_checkpoint = torch.load(args.results_dir + '/model_best.pth.tar')
+    best_checkpoint = torch.load(args.results_dir + "/" + args.site_prop + '_model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     
 
     # test model
     test_targets, test_preds, test_ids = validate(test_loader, model, criterion, normalizer, args, test=True)
     
-    pkl.dump(test_ids, open(args.results_dir + "/test_ids.pkl", "wb"))
-    pkl.dump(test_preds, open(args.results_dir + "/test_preds.pkl", "wb"))
-    pkl.dump(test_targets, open(args.results_dir + "/test_targs.pkl", "wb"))
+    pkl.dump(test_ids, open(args.results_dir + "/" + args.site_prop + "_test_ids.pkl", "wb"))
+    pkl.dump(test_preds, open(args.results_dir + "/" + args.site_prop + "_test_preds.pkl", "wb"))
+    pkl.dump(test_targets, open(args.results_dir + "/" + args.site_prop + "_test_targs.pkl", "wb"))
 
 
 if __name__ == '__main__':

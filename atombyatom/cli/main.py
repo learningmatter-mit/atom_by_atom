@@ -43,7 +43,7 @@ class CLICommand:
         subprocess.call(['python', run_file, '--data', dataset_file, '--data_cache', 
                          data_cache, '--results_dir', results_dir])
         
-    def analyze(self, model, dataset):
+    def analyze(self, model, dataset, site_prop):
 
         '''
         Analyze the results of the model on the dataset
@@ -54,7 +54,7 @@ class CLICommand:
         analysis_file = DEFAULT_ANALYSIS_PATH + 'plot_parity_bulk.py'
 
         # call analysis script with arguments
-        subprocess.call(['python', analysis_file, '--results_dir', results_dir])
+        subprocess.call(['python', analysis_file, '--model', model, '--dataset', dataset, '--site_prop', site_prop, '--results_dir', results_dir])
         
 
 
@@ -78,6 +78,7 @@ def main():
     analyze_parser = subparsers.add_parser('analyze', help='analyze results')
     analyze_parser.add_argument('--model', default='per-site_cgcnn', help='Model to analyze')
     analyze_parser.add_argument('--dataset', type=str, default='bulk_dos', help='Dataset to analyze')
+    analyze_parser.add_argument('--site_prop', type=str, default='bandcenter', help='Site property to analyze')
 
     args = parser.parse_args()
 
@@ -89,10 +90,10 @@ def main():
         command.download(dataset=args.dataset)
 
     elif args.command == 'run':
-        command.run(model=args.model, dataset=args.dataset)
+        command.run(model=args.model, dataset=args.dataset, site_prop=args.site_prop)
 
     elif args.command == 'analyze':
-        command.analyze(model=args.model, dataset=args.dataset)
+        command.analyze(model=args.model, dataset=args.dataset, site_prop=args.site_prop)
 
     else:
         parser.print_help()
