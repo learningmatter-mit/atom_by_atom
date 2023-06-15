@@ -59,10 +59,6 @@ This command assumes you have already downloaded the dataset of interest, and th
 
 After running the models, it is possible to plot results from the test set using the following line:
 ```
-atombyatom analyze --model model_name --dataset dataset_name --plot_type plot_type
+atombyatom analyze --model model_name --dataset dataset_name --site_prop site_prop
 ```
-This command assumes that you have already downloaded the dataset of interest and run the model of interest on this dataset. The plot_type options include:
-```
-parity
-violin
-``` 
+This command assumes that you have already downloaded the dataset of interest and run the model of interest on this dataset. A parity plot will be generated of calculated vs. predicted site properties. Please note that this analysis script is very basic and will include all sites, does not differentiate between surface atoms and bulk atoms, nor between oxygens and metals.
