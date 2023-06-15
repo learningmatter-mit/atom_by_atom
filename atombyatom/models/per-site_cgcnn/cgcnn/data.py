@@ -252,7 +252,8 @@ class PerSiteData(Dataset):
     def compute_item(self, cif_id, crystal):
 
         site_props = crystal.site_properties
-        target = [site_props[i] if i in site_props.keys() else [float('nan')]*len(crystal) for i in self.prop_to_predict]
+        #target = [site_props[i] if i in site_props.keys() else [float('nan')]*len(crystal) for i in self.prop_to_predict] # relic from when prop_to_predict was an array
+        target = site_props[self.prop_to_predict]
         target = torch.Tensor(target).T
 
         atom_fea = np.vstack([self.ari.get_atom_fea(crystal[i].specie.number)
