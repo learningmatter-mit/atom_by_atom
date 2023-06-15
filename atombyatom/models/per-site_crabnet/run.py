@@ -81,6 +81,10 @@ class Args():
             optim = "Adam",
             lr_update_rate = 30,
             seed = 83,
+            hl1 = 1024, 
+            hl2 = 512, 
+            hl3 = 256, 
+            hl4 = 128,
             ):
 
         self.data = data
@@ -102,6 +106,10 @@ class Args():
         self.optim = optim
         self.lr_update_rate = lr_update_rate
         self.seed = seed
+        self.hl1 = hl1
+        self.hl2 = hl2
+        self.hl3 = hl3
+        self.hl4 = hl4
 
 
 # create an instance of the Arguments class
@@ -130,6 +138,10 @@ parser.add_argument("--test_ratio", type=float, default=args_default.test_ratio)
 parser.add_argument("--optim", type=str, default=args_default.optim)
 parser.add_argument("--lr_update_rate", type=int, default=args_default.lr_update_rate)
 parser.add_argument("--seed", type=int, default=args_default.seed)
+parser.add_argument("--hl1", type=int, default=args_default.hl1)
+parser.add_argument("--hl2", type=int, default=args_default.hl2)
+parser.add_argument("--hl3", type=int, default=args_default.hl3)
+parser.add_argument("--hl4", type=int, default=args_default.hl4)
 
 # parse the arguments
 args = parser.parse_args()
@@ -552,7 +564,7 @@ def main(args):
     input_dim = embedding.shape[-1]
     output_dim = target_tensor.shape[-1]
 
-    model = PerSiteCrabNet(input_dim, output_dim)
+    model = PerSiteCrabNet(input_dim, output_dim, hidden_layer_dims=[args.hl1, args.hl2, args.hl3, args.hl4])
 
     param_list = []
     param_list.append(model.fc_out.weight.detach().cpu().numpy())
