@@ -51,10 +51,11 @@ class CLICommand:
 
         # results directory
         results_dir = DEFAULT_RESULTS_PATH + model + '/' + dataset
-        analysis_file = DEFAULT_ANALYSIS_PATH + 'plot_parity_bulk.py'
+        analysis_file = DEFAULT_ANALYSIS_PATH + 'plot_parity.py'
+        dataset_file = DEFAULT_DATA_PATH + dataset + '.json'
 
         # call analysis script with arguments
-        subprocess.call(['python', analysis_file, '--model', model, '--dataset', dataset, '--site_prop', site_prop, '--results_dir', results_dir])
+        subprocess.call(['python', analysis_file, '--data', dataset_file, '--site_prop', site_prop, '--results_dir', results_dir])
         
 
 
