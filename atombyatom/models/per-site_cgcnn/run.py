@@ -63,6 +63,7 @@ class Args():
     def __init__(self, 
             data = "data/bulk_dos.json",
             data_cache = "dataset_cache",
+            site_prop = "bandcenter",
             results_dir = "results",
             workers = 0,
             epochs = 157,
@@ -89,6 +90,7 @@ class Args():
 
         self.data = data
         self.data_cache = data_cache
+        self.site_prop = site_prop
         self.results_dir = results_dir
         self.workers = workers
         self.epochs = epochs
@@ -122,6 +124,7 @@ parser = argparse.ArgumentParser()
 # add arguments to the parser
 parser.add_argument("--data", type=str, default=args_default.data)
 parser.add_argument("--data_cache", type=str, default=args_default.data_cache)
+parser.add_argument("--site_prop", type=str, default=args_default.site_prop)
 parser.add_argument("--results_dir", type=str, default=args_default.results_dir)
 parser.add_argument("--workers", type=int, default=args_default.workers)
 parser.add_argument("--epochs", type=int, default=args_default.epochs)
@@ -522,11 +525,11 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def save_checkpoint(state, is_best, filename=args.results_dir + '/checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, filename=args.results_dir + '/' + args.site_prop +  '_checkpoint.pth.tar'):
 
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, args.results_dir + '/model_best.pth.tar')
+        shutil.copyfile(filename, args.results_dir + '/' + args.site_prop + '_model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
@@ -550,13 +553,10 @@ def main(args):
     # reformat data into samples array
     samples = [[key, Structure.from_dict(data[key])] for key in data.keys()]
 
-    # get site properties using the first sample
-    site_prop = list(samples[0][1].site_properties.keys())
-
     # get directory this file is in
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    dataset = PerSiteData(samples, site_prop, dir_path, args.data_cache, random_seed=args.seed)
+    dataset = PerSiteData(samples, args.site_prop, dir_path, args.data_cache, random_seed=args.seed)
     collate_fn = collate_pool
     train_loader, val_loader, test_loader = get_train_val_test_loader(
         dataset=dataset,

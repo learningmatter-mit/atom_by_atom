@@ -21,7 +21,7 @@ class CLICommand:
         # download file from url to output
         gdown.download(url, output_file, quiet=False)
 
-    def run(self, model, dataset):
+    def run(self, model, dataset, site_prop):
 
         '''
         Run the model on the dataset
@@ -37,7 +37,7 @@ class CLICommand:
         # get run.py from models folder
         run_file = DEFAULT_MODELS_PATH + model + '/run.py'
         dataset_file = DEFAULT_DATA_PATH + dataset + '.json'
-        data_cache = results_dir + '/' + dataset + '.cache'
+        data_cache = results_dir + '/' + dataset + '_' + site_prop + '.cache'
 
         # call run.py with arguments
         subprocess.call(['python', run_file, '--data', dataset_file, '--data_cache', 
@@ -73,6 +73,7 @@ def main():
     run_parser = subparsers.add_parser('run', help='run model')
     run_parser.add_argument('--model', default='per-site_cgcnn', help='Model to run')
     run_parser.add_argument('--dataset', type=str, default='bulk_dos', help='Dataset to run on')
+    run_parser.add_argument('--site_prop', type=str, default='bandcenter', help='Site property to run on')
 
     # Create a parser for the 'analyze' command
     analyze_parser = subparsers.add_parser('analyze', help='analyze results')
