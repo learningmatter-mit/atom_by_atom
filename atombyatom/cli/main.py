@@ -5,7 +5,9 @@ import os
 import gdown
 from atombyatom.data import DEFAULT_DATA_PATH, DEFAULT_MODELS_PATH, DEFAULT_RESULTS_PATH, DEFAULT_ANALYSIS_PATH
 
-url_dict = {'bulk_dos': 'https://drive.google.com/uc?id=1mLQYkamCFf-68FE_crt476mShs-zOue1'}
+url_dict = {'bulk_dos': 'https://drive.google.com/uc?id=1mLQYkamCFf-68FE_crt476mShs-zOue1',
+            'bulk_phonon': 'https://drive.google.com/uc?id=13S3y_6AYjtENJ77UMNDOiUurFZu6lppd',
+            'bulk_bader': 'https://drive.google.com/uc?id=1EXZtbIo3T9nVA_0EuH6o41l7wkWTHR5r'}
 
 class CLICommand:
 
