@@ -685,7 +685,7 @@ def main(args):
             break
 
     # load the best model
-    best_checkpoint = torch.load(args.results_dir + '/model_best.pth.tar')
+    best_checkpoint = torch.load(args.results_dir + '/' + args.site_prop + '_model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     
 
