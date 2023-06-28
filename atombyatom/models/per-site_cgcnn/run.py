@@ -692,9 +692,9 @@ def main(args):
     # test model
     test_targets, test_preds, test_ids = validate(test_loader, model, criterion, normalizer, args, test=True)
     
-    pkl.dump(test_ids, open(args.results_dir + "/test_ids.pkl", "wb"))
-    pkl.dump(test_preds, open(args.results_dir + "/test_preds.pkl", "wb"))
-    pkl.dump(test_targets, open(args.results_dir + "/test_targs.pkl", "wb"))
+    pkl.dump(test_ids, open(args.results_dir + "/" + args.site_prop + "_test_ids.pkl", "wb"))
+    pkl.dump(test_preds, open(args.results_dir + "/" + args.site_prop + "_test_preds.pkl", "wb"))
+    pkl.dump(test_targets, open(args.results_dir + "/" + args.site_prop + "_test_targs.pkl", "wb"))
 
 
 if __name__ == '__main__':
