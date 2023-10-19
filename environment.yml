@@ -1,12 +1,11 @@
-name: test
+name: atombyatom
 channels:
   - defaults
   - rdkit
 dependencies:
   - python=3.7
   - rdkit
-  - gdown==4.7.1
   - pip
   - pip:
-    - -r file:requirements.txt
+    - -r requirements.txt
 

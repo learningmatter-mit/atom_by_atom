@@ -9,17 +9,7 @@ This software package includes all data, models, and analysis scripts necessary 
 
 To clone this repo and all submodules:
 ```
-git clone --recurse-submodules git@github.com:learningmatter-mit/atom_by_atom.git
-```
-or
-```
 git clone git@github.com:learningmatter-mit/atom_by_atom.git
-git submodule update --init
-```
-
-To only update the submodules:
-```
-git submodule update --remote --merge
 ```
 
 We recommend installing the atombyatom package using the following line:
@@ -31,6 +21,13 @@ or
 pip install . 
 ```
 
+## Setting up the environment
+An conda environment for this repo is provided in the environment.yml file. To build and activate this environment:
+```
+conda env create -f environment.yml
+conda activate atombyatom
+```
+ 
 
 ## Downloading the data from Atom by Atom Design of Metal Oxide Catalysts for the Oxygen Evolution Reaction with Machine Learning
 
