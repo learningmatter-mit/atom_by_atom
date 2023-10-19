@@ -10,6 +10,5 @@ vbm_cbm_proj.*
 *.pickle
 *.pkl
 *cache
-*train
 *egg-info
 atombyatom/data/*.json
