@@ -44,12 +44,14 @@ Where the bulk_bader and bulk_phonon datasets are downloaded and modified from [
 
 Per-site models can be trained/tested on the downloaded datasets by running the following line:
 ```
-atombyatom run --model model_name --dataset dataset_name
+atombyatom run --model model_name --dataset dataset_name --site_prop site_property
 ```
 
 For example, to run per-site_cgcnn on the bulk_dos data, you would run the following line:
 ```
-atombyatom run --model per-site_cgcnn --dataset bulk_dos
+atombyatom run --model per-site_cgcnn --dataset bulk_dos --site_prop bandcenter  # to learn the bandcenters
+atombyatom run --model per-site_cgcnn --dataset bulk_dos --site_prop bandwidth   # to learn the bandwidths
+atombyatom run --model per-site_cgcnn --dataset bulk_dos --site_prop magmom      # to learn the magnetic moments
 ```
 
 This command assumes you have already downloaded the dataset of interest, and that this dataset is available in the appropriate data folder and with the appropriate name (see above). The results of running the model (including the train/val/test results, and a checkpoint of the best model) are stored in the atombyatom/results/model_name/dataset_name directory. the README.md files inside of the per-site_cgcnn, per-site_painn and per-site_crabnet submodules for more details about these models. 
