@@ -12,6 +12,13 @@ To clone this repo and all submodules:
 git clone git@github.com:learningmatter-mit/atom_by_atom.git
 ```
 
+## Setting up the environment
+An conda environment for this repo is provided in the environment.yml file. To build and activate this environment:
+```
+conda env create -f environment.yml
+conda activate atombyatom
+```
+
 We recommend installing the atombyatom package using the following line:
 ```
 pip install -e . # for developer mode
@@ -19,13 +26,6 @@ pip install -e . # for developer mode
 or 
 ```
 pip install . 
-```
-
-## Setting up the environment
-An conda environment for this repo is provided in the environment.yml file. To build and activate this environment:
-```
-conda env create -f environment.yml
-conda activate atombyatom
 ```
  
 
