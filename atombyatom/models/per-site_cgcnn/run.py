@@ -37,7 +37,7 @@ from cgcnn.model import PerSiteCGCNet#, BindingEnergyCGCNet
 #from utils import *
 #from surface_analyzer import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = str(2)
+os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 #assert torch.cuda.is_available(), "cuda is not available"
 
 best_mae_error = 1e10
@@ -154,6 +154,7 @@ args = parser.parse_args()
 # identify if cuda is available
 args.cuda = torch.cuda.is_available()
 device = torch.device("cuda" if args.cuda else "cpu")
+print('device: ', device)
 
 def flatten(t):
     return [item for sublist in t for item in sublist]

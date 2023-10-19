@@ -47,7 +47,7 @@ Per-site models can be trained/tested on the downloaded datasets by running the 
 atombyatom run --model model_name --dataset dataset_name --site_prop site_property
 ```
 
-For example, to run per-site_cgcnn on the bulk_dos data, you would run the following line:
+Where the options for model_name are per-site_cgcnn, per-site_painn, or per-site_crabnet. The options for site_prop are bandcenter, bandwidth and magmom for the bulk_dos dataset, bandcenter for the bulk_phonon dataset, and bader for the bulk_bader dataset. For example, to run per-site_cgcnn on the bulk_dos data, you would run the following line:
 ```
 atombyatom run --model per-site_cgcnn --dataset bulk_dos --site_prop bandcenter  # to learn the bandcenters
 atombyatom run --model per-site_cgcnn --dataset bulk_dos --site_prop bandwidth   # to learn the bandwidths

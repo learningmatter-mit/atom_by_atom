@@ -1,6 +1,9 @@
 gdown==4.7.1
 torch==1.13.1
 matplotlib==3.5.3
-sklearn==1.0.2
+scikit-learn==1.0.2
 seaborn==0.12.2
 pymatgen==2022.0.17
+ase==3.22.1
+e3fp==1.2.5
+bokeh==2.4.3
