@@ -33,10 +33,12 @@ conda activate atombyatom
 
 There are several datasets for per-site properties of bulk oxides available. You can download the datasets using the following commands: 
 ```
-atombyatom download --dataset bulk_dos
+atombyatom download --dataset bulk_dos    # dataset for bandcenters/bandwidths/magnetic moments
+atombyatom download --dataset bulk_bader  # dataset for bader charges
+atombyatom download --dataset bulk_phonon # dataset for phonon bandcenters
 ```
 
-The datasets will be downloaded inside the data folder as data/bulk_dos.json etc.
+Where the bulk_bader and bulk_phonon datasets are downloaded and modified from [the Materials Project](https://doi.org/10.1063/1.4812323). The datasets will be downloaded inside the data folder as data/bulk_dos.json etc.
 
 ## Running the per-site cgcnn, per-site painn, and per-site crabnet codes
 
